@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BioMed Study</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="application-name" content="BioMed Study" />
+  <meta name="description" content="App de estudos para Biomedicina · Hemato · Pesquisa" />
+  <meta name="theme-color" content="#e8447a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BioMed Study" />
+
+  <!-- PWA Manifest inline -->
+  <script>
+    const manifestData = {
+      name: "BioMed Study",
+      short_name: "BioMed",
+      description: "App de estudos para Biomedicina · Hemato · Pesquisa",
+      start_url: "/",
+      display: "standalone",
+      background_color: "#fff9fb",
+      theme_color: "#e8447a",
+      orientation: "portrait",
+      icons: [
+        { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23e8447a'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle' fill='white'%3E%F0%9F%94%AC%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" },
+        { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23e8447a'/%3E%3Ctext x='256' y='340' font-size='260' text-anchor='middle' fill='white'%3E%F0%9F%94%AC%3C/text%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml" }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = manifestURL;
+    document.currentScript.after(link);
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --pink: #e8447a; --pink-light: #fce8f0; --pink-mid: #f4a3c0; --rose: #c93060;
+      --lavender: #9b6fd4; --lav-light: #f0e8fa;
+      --teal: #2db89a; --teal-light: #e0f7f2;
+      --amber: #f0a030; --amber-light: #fff3e0;
+      --red-accent: #e85555;
+      --bg: #fff9fb; --card: #ffffff; --text: #2d1f2a; --muted: #8a7088; --border: #f0d8e8;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); }
+    .app { max-width: 480px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+    /* Header */
+    .header { background: linear-gradient(135deg, #e8447a 0%, #c93060 50%, #9b6fd4 100%); padding: 16px 20px 20px; position: relative; overflow: hidden; flex-shrink: 0; }
+    .header::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+    .header::after { content: ''; position: absolute; bottom: -20px; left: 40px; width: 80px; height: 80px; background: rgba(255,255,255,0.06); border-radius: 50%; }
+    .header h1 { font-family: 'Quicksand', sans-serif; color: white; font-size: 20px; font-weight: 700; position: relative; }
+    .header p { color: rgba(255,255,255,0.8); font-size: 12px; margin-top: 1px; position: relative; }
+    .header-icons { display: flex; gap: 6px; margin-top: 10px; position: relative; }
+    .hico { background: rgba(255,255,255,0.18); border-radius: 10px; padding: 6px 10px; color: white; font-size: 11px; font-weight: 600; }
+
+    /* Streak */
+    .streak { background: var(--amber-light); border-bottom: 1px solid #f5d8a0; padding: 8px 20px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #8a5010; flex-shrink: 0; }
+
+    /* Nav */
+    .nav { display: flex; background: white; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .nav-item { flex: 1; padding: 10px 4px; text-align: center; font-size: 10px; font-weight: 700; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+    .nav-item.active { color: var(--pink); border-bottom-color: var(--pink); }
+    .nav-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+
+    /* Scroll area */
+    .sections { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .section { display: none; padding: 14px 14px 30px; }
+    .section.active { display: block; }
+
+    /* Cards */
+    .card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); padding: 14px; margin-bottom: 12px; }
+    .card-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .sec-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .sec-header h2 { font-family: 'Quicksand', sans-serif; font-size: 17px; font-weight: 700; }
+    .sec-badge { background: var(--pink-light); color: var(--pink); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+    /* Subjects */
+    .subject-btn { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--border); background: white; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; width: 100%; text-align: left; -webkit-tap-highlight-color: transparent; }
+    .subject-btn:active { background: var(--pink-light); }
+    .subject-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .subject-name { font-size: 14px; font-weight: 600; flex: 1; }
+    .subject-count { font-size: 12px; color: var(--muted); }
+
+    /* Flashcard viewer */
+    .subject-list.hidden { display: none; }
+    .fc-card { background: linear-gradient(135deg, #fff0f6, #fce8f0); border: 1px solid var(--pink-mid); border-radius: 20px; padding: 28px 20px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; margin-bottom: 14px; position: relative; -webkit-tap-highlight-color: transparent; }
+    .fc-tag { font-size: 10px; font-weight: 700; color: var(--pink); background: white; border-radius: 20px; padding: 3px 10px; position: absolute; top: 12px; left: 12px; }
+    .fc-question { font-size: 15px; font-weight: 600; line-height: 1.6; }
+    .fc-answer { font-size: 13px; color: var(--muted); line-height: 1.6; display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--pink-mid); }
+    .fc-tap { font-size: 11px; color: var(--muted); margin-top: 14px; }
+    .fc-answer.shown { display: block; }
+    .fc-actions { display: flex; gap: 8px; margin-bottom: 14px; }
+    .fc-btn { flex: 1; padding: 11px 6px; border-radius: 12px; border: none; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .fc-btn.wrong { background: #fde8e8; color: var(--red-accent); }
+    .fc-btn.ok { background: var(--amber-light); color: #8a5010; }
+    .fc-btn.right { background: var(--teal-light); color: var(--teal); }
+    .fc-progress { display: flex; gap: 4px; margin-bottom: 12px; }
+    .fc-dot { height: 5px; border-radius: 3px; background: var(--border); flex: 1; }
+    .fc-dot.done-right { background: var(--teal); }
+    .fc-dot.done-wrong { background: var(--red-accent); }
+    .fc-counter { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 8px; }
+    .back-btn { display: flex; align-items: center; gap: 6px; color: var(--pink); font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 14px; -webkit-tap-highlight-color: transparent; }
+
+    /* Checklist */
+    .check-date { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .check-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--border); background: white; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+    .check-item.done { background: var(--teal-light); border-color: #a0ddd2; }
+    .check-box { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .check-item.done .check-box { background: var(--teal); border-color: var(--teal); color: white; }
+    .check-label { font-size: 14px; font-weight: 600; flex: 1; }
+    .check-item.done .check-label { text-decoration: line-through; color: var(--muted); }
+    .check-tag { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 700; }
+    .tag-hemato { background: var(--pink-light); color: var(--pink); }
+    .tag-bio { background: var(--lav-light); color: var(--lavender); }
+    .tag-lab { background: var(--teal-light); color: var(--teal); }
+    .add-task-row { display: flex; gap: 8px; margin-top: 10px; }
+    .add-input { flex: 1; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border); font-family: 'Nunito', sans-serif; font-size: 14px; outline: none; background: white; color: var(--text); }
+    .add-input:focus { border-color: var(--pink-mid); }
+    .add-btn { background: var(--pink); color: white; border: none; border-radius: 12px; padding: 10px 18px; font-size: 20px; cursor: pointer; }
+    .progress-ring { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--pink-light); border-radius: 14px; margin-bottom: 14px; }
+    .ring-circle { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+    .ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: var(--pink); }
+    .ring-info h3 { font-size: 14px; font-weight: 700; }
+    .ring-info p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* Calendar */
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .cal-header h3 { font-size: 15px; font-weight: 700; }
+    .cal-nav { background: var(--pink-light); color: var(--pink); border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 16px; font-weight: 700; -webkit-tap-highlight-color: transparent; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 14px; }
+    .cal-day-name { text-align: center; font-size: 10px; font-weight: 700; color: var(--muted); padding: 3px 0; }
+    .cal-day { aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer; position: relative; color: var(--text); -webkit-tap-highlight-color: transparent; }
+    .cal-day.today { background: var(--pink); color: white; border-radius: 50%; }
+    .cal-day.has-event::after { content: ''; position: absolute; bottom: 2px; width: 4px; height: 4px; border-radius: 50%; background: var(--lavender); }
+    .cal-day.today.has-event::after { background: white; }
+    .cal-day.studied { background: var(--teal-light); border-radius: 8px; }
+    .cal-day.studied.today { background: var(--pink); border-radius: 50%; }
+    .event-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: white; margin-bottom: 8px; }
+    .event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .event-info { flex: 1; }
+    .event-name { font-size: 13px; font-weight: 600; }
+    .event-date { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .event-tag { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
+    .add-event-btn { width: 100%; padding: 12px; background: var(--pink-light); color: var(--pink); border: 1px dashed var(--pink-mid); border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 4px; }
+
+    /* Spaced rep */
+    .sr-today { background: var(--lav-light); border: 1px solid #c8b8f0; border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+    .sr-today h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .sr-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
+    .sr-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .sr-info { flex: 1; }
+    .sr-topic { font-size: 13px; font-weight: 600; }
+    .sr-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .sr-urgent { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+    .urgent-now { background: #fde8e8; color: var(--red-accent); }
+    .urgent-today { background: var(--amber-light); color: #8a5010; }
+    .sr-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 12px; }
+    .sr-wday { text-align: center; }
+    .sr-wname { font-size: 10px; color: var(--muted); font-weight: 700; margin-bottom: 3px; }
+    .sr-wcount { height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .sr-wcount.has-items { background: var(--lav-light); color: var(--lavender); }
+    .sr-wcount.empty { background: var(--border); color: var(--muted); }
+    .sr-wcount.today-col { background: var(--lavender); color: white; }
+    .interval-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .int-pill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+    .study-add-btn { width: 100%; padding: 12px; background: var(--lav-light); color: var(--lavender); border: 1px dashed #c8b8f0; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 4px; }
+
+    /* Modals */
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; align-items: flex-end; justify-content: center; }
+    .modal-bg.open { display: flex; }
+    .modal { background: white; border-radius: 24px 24px 0 0; padding: 24px; width: 100%; max-width: 480px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+    .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+    .modal input, .modal select, .modal textarea { width: 100%; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border); font-family: 'Nunito', sans-serif; font-size: 14px; margin-bottom: 10px; outline: none; color: var(--text); background: white; }
+    .modal textarea { height: 80px; resize: none; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+    .modal-cancel { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: white; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text); }
+    .modal-save { flex: 1; padding: 12px; border-radius: 12px; border: none; background: var(--pink); color: white; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+    /* Home grid */
+    .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .home-stat { border-radius: 12px; padding: 14px; text-align: center; }
+    .home-stat-num { font-size: 26px; font-weight: 800; }
+    .home-stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>🔬 BioMed Study</h1>
+    <p>Biomedicina · Área de Pesquisa · Hemato</p>
+    <div class="header-icons">
+      <span class="hico">Hemato</span>
+      <span class="hico">Lab</span>
+      <span class="hico">Pesquisa</span>
+    </div>
+  </div>
+
+  <div class="streak">
+    <span>🔥</span>
+    <span id="streak-text">3 dias seguidos estudando!</span>
+    <span style="margin-left:auto;font-size:11px;color:#b07820;">Continue assim!</span>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-item active" onclick="showSection('home')"><span class="nav-icon">🏠</span>Início</div>
+    <div class="nav-item" onclick="showSection('flashcards')"><span class="nav-icon">🃏</span>Cards</div>
+    <div class="nav-item" onclick="showSection('checklist')"><span class="nav-icon">✅</span>Hoje</div>
+    <div class="nav-item" onclick="showSection('calendar')"><span class="nav-icon">📅</span>Agenda</div>
+    <div class="nav-item" onclick="showSection('spaced')"><span class="nav-icon">🔁</span>Revisão</div>
+  </nav>
+
+  <div class="sections">
+    <!-- HOME -->
+    <div id="home" class="section active">
+      <div class="sec-header"><h2>Olá, pesquisadora! 👩‍🔬</h2></div>
+      <div class="card">
+        <div class="card-title">Progresso de hoje</div>
+        <div class="home-grid">
+          <div class="home-stat" style="background:var(--pink-light);">
+            <div class="home-stat-num" style="color:var(--pink);" id="home-cards-done">0</div>
+            <div class="home-stat-label">Cards revisados</div>
+          </div>
+          <div class="home-stat" style="background:var(--teal-light);">
+            <div class="home-stat-num" style="color:var(--teal);" id="home-tasks-done">0</div>
+            <div class="home-stat-label">Tarefas feitas</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Revisões pendentes hoje</div>
+        <div id="home-pending-list"></div>
+        <button class="study-add-btn" style="margin-top:8px;" onclick="showSection('spaced')">Ver todas as revisões →</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Próximas provas</div>
+        <div id="home-exams-list"></div>
+        <button class="add-event-btn" onclick="showSection('calendar')" style="margin-top:4px;">Ver agenda completa →</button>
+      </div>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div id="flashcards" class="section">
+      <div class="sec-header"><h2>Flashcards</h2><span class="sec-badge" id="total-badge">82 cards</span></div>
+      <div class="subject-list" id="subject-list">
+        <div class="card" style="margin-bottom:12px;">
+          <div class="card-title">Por matéria</div>
+          <div id="subjects-by-subject"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Por prova</div>
+          <div id="subjects-by-exam"></div>
+        </div>
+        <button class="add-event-btn" onclick="openModal('add-card-modal')">+ Adicionar novo card</button>
+      </div>
+      <div class="subject-list hidden" id="flashcard-view">
+        <div class="back-btn" onclick="backToSubjects()">← Voltar</div>
+        <div class="fc-counter" id="fc-counter">Card 1 de 8</div>
+        <div class="fc-progress" id="fc-progress"></div>
+        <div class="fc-card" id="fc-card" onclick="revealAnswer()">
+          <span class="fc-tag" id="fc-tag">Hematologia</span>
+          <div class="fc-question" id="fc-question"></div>
+          <div class="fc-answer" id="fc-answer"></div>
+          <div class="fc-tap" id="fc-tap">Toque para revelar a resposta ✨</div>
+        </div>
+        <div class="fc-actions" id="fc-actions" style="display:none;">
+          <button class="fc-btn wrong" onclick="rateCard('wrong')">😓 Errei</button>
+          <button class="fc-btn ok" onclick="rateCard('ok')">🤔 Mais ou menos</button>
+          <button class="fc-btn right" onclick="rateCard('right')">✅ Acertei</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div id="checklist" class="section">
+      <div class="sec-header"><h2>Tarefas de hoje</h2></div>
+      <div class="progress-ring">
+        <div class="ring-circle">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#f0d8e8" stroke-width="6"/>
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#e8447a" stroke-width="6"
+              stroke-dasharray="138.2" stroke-dashoffset="138.2" stroke-linecap="round"
+              transform="rotate(-90 28 28)" id="ring-circle"/>
+          </svg>
+          <div class="ring-text" id="ring-pct">0%</div>
+        </div>
+        <div class="ring-info">
+          <h3 id="ring-label">Vamos começar! 💪</h3>
+          <p id="ring-sub">carregando...</p>
+        </div>
+      </div>
+      <div class="check-date" id="check-date"></div>
+      <div id="task-list"></div>
+      <div class="add-task-row">
+        <input class="add-input" id="new-task-input" placeholder="Nova tarefa..." />
+        <button class="add-btn" onclick="addTask()">+</button>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div id="calendar" class="section">
+      <div class="sec-header"><h2>Agenda</h2></div>
+      <div class="card">
+        <div class="cal-header">
+          <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+          <h3 id="cal-month-label"></h3>
+          <button class="cal-nav" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="sec-header" style="margin-top:4px;"><h2 style="font-size:15px;">Próximos eventos</h2></div>
+      <div id="events-list"></div>
+      <button class="add-event-btn" onclick="openModal('event-modal')">+ Adicionar evento ou prova</button>
+    </div>
+
+    <!-- SPACED REP -->
+    <div id="spaced" class="section">
+      <div class="sec-header"><h2>Repetição Espaçada</h2></div>
+      <div class="sr-today">
+        <h3>📬 Para revisar hoje</h3>
+        <div id="sr-today-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Fila da semana</div>
+        <div class="sr-week" id="sr-week"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Como funciona</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px;">Avalie cada card e o intervalo de revisão é calculado automaticamente. Quanto mais acertar, mais tempo até a próxima revisão!</p>
+        <div class="interval-legend">
+          <span class="int-pill" style="background:#fde8e8;color:var(--red-accent);">Errei → 1 dia</span>
+          <span class="int-pill" style="background:var(--amber-light);color:#8a5010;">Mais ou menos → 3 dias</span>
+          <span class="int-pill" style="background:var(--teal-light);color:var(--teal);">Acertei → 7 dias</span>
+          <span class="int-pill" style="background:var(--lav-light);color:var(--lavender);">Perfeito → 14 dias</span>
+        </div>
+      </div>
+      <button class="study-add-btn" onclick="openModal('sr-modal')">+ Adicionar tópico para revisar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal-bg" id="add-card-modal">
+  <div class="modal">
+    <h3>✨ Novo Flashcard</h3>
+    <input id="nc-question" placeholder="Pergunta..." />
+    <textarea id="nc-answer" placeholder="Resposta..."></textarea>
+    <select id="nc-subject">
+      <option>Hematologia Básica</option>
+      <option>Coagulação</option>
+      <option>Hemoglobinopatias</option>
+      <option>Leucemias e Linfomas</option>
+      <option>Imunohematologia</option>
+    </select>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('add-card-modal')">Cancelar</button>
+      <button class="modal-save" onclick="saveCard()">Salvar card</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="event-modal">
+  <div class="modal">
+    <h3>📅 Novo Evento</h3>
+    <input id="ev-name" placeholder="Nome do evento / prova..." />
+    <input id="ev-date" type="date" />
+    <select id="ev-type">
+      <option value="prova">Prova</option>
+      <option value="entrega">Entrega</option>
+      <option value="seminario">Seminário</option>
+      <option value="defesa">Defesa</option>
+    </select>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('event-modal')">Cancelar</button>
+      <button class="modal-save" onclick="saveEvent()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="sr-modal">
+  <div class="modal">
+    <h3>🔁 Novo Tópico para Revisão</h3>
+    <input id="sr-topic" placeholder="Tópico (ex: Cascata da Coagulação)..." />
+    <select id="sr-subject">
+      <option>Hematologia Básica</option>
+      <option>Coagulação</option>
+      <option>Hemoglobinopatias</option>
+      <option>Leucemias e Linfomas</option>
+    </select>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('sr-modal')">Cancelar</button>
+      <button class="modal-save" onclick="saveSRTopic()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────
+const subjects = [
+  { name:'Hematologia Básica', color:'#e8447a', count:24 },
+  { name:'Coagulação', color:'#c93060', count:18 },
+  { name:'Hemoglobinopatias', color:'#9b6fd4', count:15 },
+  { name:'Leucemias e Linfomas', color:'#2db89a', count:14 },
+  { name:'Imunohematologia', color:'#f0a030', count:11 },
+];
+const exams = [
+  { name:'P1 Hematologia', color:'#e8447a', count:42 },
+  { name:'P2 Hemostasia', color:'#9b6fd4', count:33 },
+  { name:'Trabalho Final Hemato', color:'#2db89a', count:20 },
+];
+const flashcardData = {
+  'Hematologia Básica': [
+    { q:'Qual é a vida média de uma hemácia circulante?', a:'Aproximadamente 120 dias. As hemácias são destruídas principalmente no baço por macrófagos (hemólise extravascular).' },
+    { q:'O que é eritropoietina e onde é produzida?', a:'Hormônio glicoproteico produzido principalmente pelo rim em resposta à hipóxia. Estimula a eritropoiese na medula óssea.' },
+    { q:'Quais são os valores normais de hemoglobina em adultos?', a:'Homens: 13,5–17,5 g/dL. Mulheres: 12,0–15,5 g/dL.' },
+    { q:'O que é reticulócito e qual seu significado clínico?', a:'Precursor imaturo da hemácia com RNA ribossomal. Aumento indica resposta regenerativa da medula óssea.' },
+    { q:'Descreva a estrutura da hemoglobina adulta (HbA).', a:'Tetrâmero com 2 cadeias alfa e 2 beta, cada uma ligada a um grupo heme com ferro (Fe²⁺).' },
+    { q:'O que é anemia ferropriva e quais são seus índices?', a:'Anemia microcítica (VCM < 80 fL) e hipocrômica (HCM < 27 pg) por deficiência de ferro.' },
+    { q:'Quais células compõem o diferencial leucocitário normal?', a:'Neutrófilos (50–70%), linfócitos (20–40%), monócitos (2–8%), eosinófilos (1–4%), basófilos (0–1%).' },
+    { q:'O que é hemostasia primária?', a:'Formação do tampão plaquetário: adesão via FvW, ativação e agregação plaquetária.' },
+  ],
+  'Coagulação': [
+    { q:'Quais são as vias da cascata de coagulação?', a:'Via extrínseca (fator tecidual + FVII), via intrínseca (FXII, FXI, FIX, FVIII) e via comum (FX, FV, protrombina, fibrinogênio).' },
+    { q:'O que mede o Tempo de Protrombina (TP)?', a:'Avalia via extrínseca e comum: fatores I, II, V, VII e X. Usado para monitorar anticoagulação com warfarina (INR).' },
+    { q:'Qual a diferença entre TTPA e TP?', a:'TTPA avalia vias intrínseca e comum (fatores VIII, IX, XI, XII). TP avalia via extrínseca e comum (FVII principalmente).' },
+    { q:'O que é fibrinólise?', a:'Processo de degradação do coágulo de fibrina pela plasmina, gerada a partir do plasminogênio pela ação do t-PA.' },
+  ],
+  'Hemoglobinopatias': [
+    { q:'Qual é a mutação responsável pela anemia falciforme?', a:'Substituição de ácido glutâmico por valina na posição 6 da cadeia beta-globina, resultando em HbS.' },
+    { q:'O que são talassemias?', a:'Doenças hereditárias por síntese deficiente de globina. Alfa: genes HBA. Beta: genes HBB.' },
+    { q:'Como se faz o diagnóstico laboratorial da anemia falciforme?', a:'Eletroforese de hemoglobina, HPLC, teste de falcização e triagem neonatal (teste do pezinho).' },
+  ],
+  'Leucemias e Linfomas': [
+    { q:'Qual é a translocação característica da LMC?', a:'Translocação t(9;22) — cromossomo Philadelphia — gerando BCR-ABL1 com atividade tirosina quinase.' },
+    { q:'Como diferenciar LLA de LMA na citometria?', a:'LLA: CD19+/CD10+ (B) ou CD3+/CD7+ (T). LMA: CD13+, CD33+, CD117+, MPO+.' },
+    { q:'O que é síndrome mielodisplásica?', a:'Grupo de neoplasias clonais da célula-tronco com citopenias, displasia medular e risco de evolução para LMA.' },
+  ],
+  'Imunohematologia': [
+    { q:'O que é o sistema ABO?', a:'Sistema de grupos sanguíneos baseado em antígenos de superfície da hemácia. Determinado por alelos A, B e O no cromossomo 9.' },
+    { q:'O que é o teste de Coombs direto?', a:'Detecta anticorpos ou complemento ligados às hemácias do paciente. Positivo em anemia hemolítica autoimune.' },
+    { q:'O que é a doença hemolítica do recém-nascido (DHRN)?', a:'Hemólise fetal causada por anticorpos IgG maternos (anti-D, anti-c etc.) que atravessam a placenta e destroem hemácias fetais.' },
+  ],
+};
+
+// ── State (persisted in localStorage) ─────────────────
+function load(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def; } catch { return def; } }
+function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+
+let tasks = load('bms_tasks', [
+  { id:1, text:'Ler artigo sobre CID-10 em hemato', done:false, tag:'hemato' },
+  { id:2, text:'Revisar cascata de coagulação', done:false, tag:'hemato' },
+  { id:3, text:'Praticar leitura de hemograma', done:true, tag:'lab' },
+  { id:4, text:'Resumo de hemoglobinopatias', done:false, tag:'bio' },
+  { id:5, text:'Exercícios cap. 3 - Hematologia', done:false, tag:'hemato' },
+]);
+
+let events = load('bms_events', []).map(e => ({ ...e, date: new Date(e.date) }));
+if (!events.length) {
+  events = [
+    { id:1, name:'P1 Hematologia Clínica', date:new Date(2026,2,28), type:'prova', color:'#e8447a' },
+    { id:2, name:'Entrega do relatório de estágio', date:new Date(2026,3,5), type:'entrega', color:'#f0a030' },
+    { id:3, name:'P2 Hemostasia', date:new Date(2026,3,18), type:'prova', color:'#9b6fd4' },
+    { id:4, name:'Seminário Leucemias', date:new Date(2026,3,25), type:'seminario', color:'#2db89a' },
+  ];
+}
+
+let srTopics = load('bms_sr', [
+  { id:1, topic:'Cascata da Coagulação', subject:'Coagulação', nextReview:0, urgency:'now' },
+  { id:2, topic:'Sistema ABO', subject:'Imunohematologia', nextReview:0, urgency:'today' },
+  { id:3, topic:'Morfologia do Esfregaço', subject:'Hematologia Básica', nextReview:1, urgency:'soon' },
+  { id:4, topic:'Mutação HbS', subject:'Hemoglobinopatias', nextReview:3, urgency:'soon' },
+  { id:5, topic:'Critérios OMS para Leucemias', subject:'Leucemias e Linfomas', nextReview:5, urgency:'later' },
+]);
+
+let extraCards = load('bms_extra_cards', {});
+let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+let currentSubject = null, currentCards = [], currentCardIdx = 0;
+let cardResults = [], cardRevealed = false, cardsDoneToday = 0;
+
+// ── Navigation ─────────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx = ['home','flashcards','checklist','calendar','spaced'].indexOf(id);
+  if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  const renders = { home:renderHome, flashcards:renderSubjects, checklist:renderChecklist, calendar:renderCalendar, spaced:renderSpaced };
+  if (renders[id]) renders[id]();
+}
+
+// ── Home ───────────────────────────────────────────────
+function renderHome() {
+  document.getElementById('home-cards-done').textContent = cardsDoneToday;
+  document.getElementById('home-tasks-done').textContent = tasks.filter(t => t.done).length;
+  const pending = srTopics.filter(t => t.nextReview <= 0);
+  document.getElementById('home-pending-list').innerHTML = pending.length === 0
+    ? '<p style="font-size:13px;color:var(--muted);">Nenhuma revisão pendente! 🎉</p>'
+    : pending.map(t => `<div class="sr-card" style="margin-bottom:8px;"><div class="sr-dot" style="background:${t.urgency==='now'?'#e85555':'#f0a030'}"></div><div class="sr-info"><div class="sr-topic">${t.topic}</div><div class="sr-sub">${t.subject}</div></div><span class="sr-urgent ${t.urgency==='now'?'urgent-now':'urgent-today'}">${t.urgency==='now'?'Urgente':'Hoje'}</span></div>`).join('');
+  const upcoming = events.filter(e => e.type === 'prova' && new Date(e.date) >= new Date()).sort((a,b) => new Date(a.date)-new Date(b.date)).slice(0,3);
+  document.getElementById('home-exams-list').innerHTML = upcoming.map(e => {
+    const diff = Math.ceil((new Date(e.date) - new Date()) / 86400000);
+    return `<div class="event-item"><div class="event-dot" style="background:${e.color}"></div><div class="event-info"><div class="event-name">${e.name}</div><div class="event-date">Em ${diff} dias · ${new Date(e.date).toLocaleDateString('pt-BR')}</div></div><span class="event-tag" style="background:${e.color}22;color:${e.color};">Prova</span></div>`;
+  }).join('') || '<p style="font-size:13px;color:var(--muted);">Nenhuma prova cadastrada.</p>';
+}
+
+// ── Flashcards ─────────────────────────────────────────
+function renderSubjects() {
+  document.getElementById('subjects-by-subject').innerHTML = subjects.map(s =>
+    `<div class="subject-btn" onclick="startFlashcards('${s.name}')"><div class="subject-dot" style="background:${s.color}"></div><span class="subject-name">${s.name}</span><span class="subject-count">${(flashcardData[s.name]||[]).length + (extraCards[s.name]||[]).length} cards</span><span style="color:var(--muted);">›</span></div>`
+  ).join('');
+  document.getElementById('subjects-by-exam').innerHTML = exams.map(e =>
+    `<div class="subject-btn" onclick="startFlashcards('Hematologia Básica')"><div class="subject-dot" style="background:${e.color}"></div><span class="subject-name">${e.name}</span><span class="subject-count">${e.count} cards</span><span style="color:var(--muted);">›</span></div>`
+  ).join('');
+}
+
+function startFlashcards(name) {
+  currentSubject = name;
+  const base = flashcardData[name] || flashcardData['Hematologia Básica'];
+  const extra = extraCards[name] || [];
+  currentCards = [...base, ...extra];
+  currentCardIdx = 0; cardResults = new Array(currentCards.length).fill(null); cardRevealed = false;
+  document.getElementById('subject-list').classList.add('hidden');
+  document.getElementById('flashcard-view').classList.remove('hidden');
+  showCard();
+}
+
+function showCard() {
+  if (currentCardIdx >= currentCards.length) { finishFlashcards(); return; }
+  const card = currentCards[currentCardIdx];
+  document.getElementById('fc-tag').textContent = currentSubject;
+  document.getElementById('fc-question').textContent = card.q;
+  document.getElementById('fc-answer').textContent = card.a;
+  document.getElementById('fc-answer').classList.remove('shown');
+  document.getElementById('fc-actions').style.display = 'none';
+  document.getElementById('fc-tap').style.display = 'block';
+  document.getElementById('fc-counter').textContent = `Card ${currentCardIdx+1} de ${currentCards.length}`;
+  cardRevealed = false;
+  document.getElementById('fc-progress').innerHTML = currentCards.map((_,i) => {
+    let c = 'fc-dot';
+    if (cardResults[i]==='right') c += ' done-right';
+    else if (cardResults[i]==='wrong') c += ' done-wrong';
+    return `<div class="${c}"></div>`;
+  }).join('');
+}
+
+function revealAnswer() {
+  if (!cardRevealed) {
+    document.getElementById('fc-answer').classList.add('shown');
+    document.getElementById('fc-actions').style.display = 'flex';
+    document.getElementById('fc-tap').style.display = 'none';
+    cardRevealed = true;
+  }
+}
+
+function rateCard(result) {
+  cardResults[currentCardIdx] = result === 'right' ? 'right' : 'wrong';
+  cardsDoneToday++; currentCardIdx++;
+  if (currentCardIdx < currentCards.length) showCard(); else finishFlashcards();
+}
+
+function finishFlashcards() {
+  const right = cardResults.filter(r => r==='right').length;
+  document.getElementById('fc-card').innerHTML = `<div style="text-align:center;padding:10px;"><div style="font-size:36px;margin-bottom:8px;">🎉</div><div style="font-size:16px;font-weight:700;margin-bottom:6px;">Sessão concluída!</div><div style="font-size:14px;color:var(--muted);">${right} de ${currentCards.length} acertos</div><button onclick="backToSubjects()" style="margin-top:16px;padding:10px 24px;background:var(--pink);color:white;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Voltar às matérias</button></div>`;
+  document.getElementById('fc-actions').style.display = 'none';
+}
+
+function backToSubjects() {
+  document.getElementById('subject-list').classList.remove('hidden');
+  document.getElementById('flashcard-view').classList.add('hidden');
+  renderSubjects();
+}
+
+// ── Checklist ──────────────────────────────────────────
+function renderChecklist() {
+  const now = new Date();
+  document.getElementById('check-date').textContent = now.toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
+  const done = tasks.filter(t => t.done).length;
+  const pct = tasks.length ? Math.round((done/tasks.length)*100) : 0;
+  const circ = 2*Math.PI*22;
+  document.getElementById('ring-circle').style.strokeDashoffset = circ - (circ*pct/100);
+  document.getElementById('ring-pct').textContent = pct+'%';
+  document.getElementById('ring-sub').textContent = `${done} de ${tasks.length} tarefas concluídas`;
+  const labels = ['Vamos começar! 💪','Boa, continue! ✨','Na metade! 🌟','Quase lá! 🔥','Arrasou! 🏆'];
+  document.getElementById('ring-label').textContent = labels[Math.min(Math.floor(pct/25),4)];
+  const tagMap = {hemato:'tag-hemato',bio:'tag-bio',lab:'tag-lab'};
+  const tagLabel = {hemato:'Hemato',bio:'Biologia',lab:'Lab'};
+  document.getElementById('task-list').innerHTML = tasks.map(t =>
+    `<div class="check-item ${t.done?'done':''}" onclick="toggleTask(${t.id})"><div class="check-box">${t.done?'✓':''}</div><span class="check-label">${t.text}</span><span class="check-tag ${tagMap[t.tag]||''}">${tagLabel[t.tag]||''}</span></div>`
+  ).join('');
+}
+
+function toggleTask(id) {
+  const t = tasks.find(t => t.id===id);
+  if (t) t.done = !t.done;
+  save('bms_tasks', tasks);
+  renderChecklist();
+}
+
+function addTask() {
+  const inp = document.getElementById('new-task-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  tasks.push({ id:Date.now(), text, done:false, tag:'hemato' });
+  save('bms_tasks', tasks);
+  inp.value = '';
+  renderChecklist();
+}
+
+// ── Calendar ───────────────────────────────────────────
+function renderCalendar() {
+  const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  document.getElementById('cal-month-label').textContent = `${months[calMonth]} ${calYear}`;
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+  const studiedDays = new Set(load('bms_studied_'+calYear+'_'+calMonth, []));
+  const eventDays = new Set(events.filter(e => new Date(e.date).getFullYear()===calYear && new Date(e.date).getMonth()===calMonth).map(e => new Date(e.date).getDate()));
+  let html = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => `<div class="cal-day-name">${d}</div>`).join('');
+  for (let i=0; i<firstDay; i++) html += `<div></div>`;
+  for (let d=1; d<=daysInMonth; d++) {
+    const isToday = d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
+    const isStudied = studiedDays.has(d);
+    const hasEv = eventDays.has(d);
+    html += `<div class="cal-day${isToday?' today':''}${isStudied?' studied':''}${hasEv?' has-event':''}" onclick="toggleStudiedDay(${d})">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+  const typeLabel = {prova:'Prova',entrega:'Entrega',seminario:'Seminário',defesa:'Defesa'};
+  document.getElementById('events-list').innerHTML = events.filter(e => new Date(e.date)>=new Date()).sort((a,b)=>new Date(a.date)-new Date(b.date)).map(e =>
+    `<div class="event-item"><div class="event-dot" style="background:${e.color}"></div><div class="event-info"><div class="event-name">${e.name}</div><div class="event-date">${new Date(e.date).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}</div></div><span class="event-tag" style="background:${e.color}22;color:${e.color};">${typeLabel[e.type]||e.type}</span></div>`
+  ).join('') || '<p style="font-size:13px;color:var(--muted);">Nenhum evento próximo.</p>';
+}
+
+function toggleStudiedDay(d) {
+  const key = 'bms_studied_'+calYear+'_'+calMonth;
+  const studied = new Set(load(key, []));
+  if (studied.has(d)) studied.delete(d); else studied.add(d);
+  save(key, [...studied]);
+  renderCalendar();
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth=0; calYear++; }
+  if (calMonth < 0) { calMonth=11; calYear--; }
+  renderCalendar();
+}
+
+// ── Spaced Rep ─────────────────────────────────────────
+function renderSpaced() {
+  const urgColors = {now:'#e85555',today:'#f0a030',soon:'#2db89a',later:'#9b6fd4'};
+  const urgClass = {now:'urgent-now',today:'urgent-today',soon:'urgent-soon'};
+  const urgLabel = {now:'Urgente',today:'Hoje',soon:'Em breve'};
+  const todayItems = srTopics.filter(t => t.nextReview <= 0);
+  document.getElementById('sr-today-list').innerHTML = todayItems.length === 0
+    ? '<p style="font-size:13px;color:#8a7088;">Tudo em dia! 🎉</p>'
+    : todayItems.map(t => `<div class="sr-card"><div class="sr-dot" style="background:${urgColors[t.urgency]}"></div><div class="sr-info"><div class="sr-topic">${t.topic}</div><div class="sr-sub">${t.subject}</div></div>${urgClass[t.urgency]?`<span class="sr-urgent ${urgClass[t.urgency]}">${urgLabel[t.urgency]}</span>`:''}</div>`).join('');
+  const days = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const todayDay = new Date().getDay();
+  document.getElementById('sr-week').innerHTML = days.map((d,i) => {
+    const diff = (i-todayDay+7)%7;
+    const count = srTopics.filter(t => t.nextReview===diff).length;
+    const isToday = i===todayDay;
+    return `<div class="sr-wday"><div class="sr-wname">${d}</div><div class="sr-wcount ${isToday?'today-col':count>0?'has-items':'empty'}">${count||'-'}</div></div>`;
+  }).join('');
+}
+
+// ── Modals ─────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function saveCard() {
+  const q = document.getElementById('nc-question').value.trim();
+  const a = document.getElementById('nc-answer').value.trim();
+  const subj = document.getElementById('nc-subject').value;
+  if (!q || !a) { closeModal('add-card-modal'); return; }
+  if (!extraCards[subj]) extraCards[subj] = [];
+  extraCards[subj].push({ q, a });
+  save('bms_extra_cards', extraCards);
+  document.getElementById('nc-question').value = '';
+  document.getElementById('nc-answer').value = '';
+  closeModal('add-card-modal');
+  renderSubjects();
+}
+
+function saveEvent() {
+  const name = document.getElementById('ev-name').value.trim();
+  const dateStr = document.getElementById('ev-date').value;
+  const type = document.getElementById('ev-type').value;
+  if (!name || !dateStr) { closeModal('event-modal'); return; }
+  const colors = {prova:'#e8447a',entrega:'#f0a030',seminario:'#2db89a',defesa:'#9b6fd4'};
+  events.push({ id:Date.now(), name, date:new Date(dateStr+'T12:00:00'), type, color:colors[type] });
+  save('bms_events', events.map(e => ({ ...e, date:e.date.toISOString() })));
+  document.getElementById('ev-name').value = ''; document.getElementById('ev-date').value = '';
+  closeModal('event-modal'); renderCalendar();
+}
+
+function saveSRTopic() {
+  const topic = document.getElementById('sr-topic').value.trim();
+  const subject = document.getElementById('sr-subject').value;
+  if (!topic) { closeModal('sr-modal'); return; }
+  srTopics.unshift({ id:Date.now(), topic, subject, nextReview:0, urgency:'today' });
+  save('bms_sr', srTopics);
+  document.getElementById('sr-topic').value = '';
+  closeModal('sr-modal'); renderSpaced();
+}
+
+// ── Service Worker (offline support) ──────────────────
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'biomed-study-v1';
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/', '/index.html'])));
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/index.html'))));
+    });
+  `;
+  const swBlob = new Blob([swCode], { type: 'application/javascript' });
+  const swURL = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swURL).catch(() => {});
+}
+
+// ── Init ───────────────────────────────────────────────
+renderHome(); renderSubjects(); renderChecklist(); renderCalendar(); renderSpaced();
+</script>
+</body>
+</html>
